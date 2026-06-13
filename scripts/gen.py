@@ -96,7 +96,10 @@ for r in index:
 open(f"{REPO}/SETS.md", "w").write("\n".join(idx) + "\n")
 
 # --- README ---
+cards_disp = f"{total_cards:,}".replace(",", "%2C")
 readme = f"""# mtg-setlists
+
+![Sets](https://img.shields.io/badge/sets-{len(index)}-blue) ![Card printings](https://img.shields.io/badge/card%20printings-{cards_disp}-brightgreen)
 
 Per-set card lists for every Magic: the Gathering set, generated from Scryfall's bulk
 `default_cards` export (one entry per printing, English where available).

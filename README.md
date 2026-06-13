@@ -1,5 +1,7 @@
 # mtg-setlists
 
+![Sets](https://img.shields.io/badge/sets-1042-blue) ![Card printings](https://img.shields.io/badge/card%20printings-115%2C803-brightgreen)
+
 Per-set card lists for every Magic: the Gathering set, generated from Scryfall's bulk
 `default_cards` export (one entry per printing, English where available).
 
