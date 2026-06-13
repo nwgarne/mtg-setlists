@@ -10,8 +10,9 @@ Per-set card lists for every Magic: the Gathering set, generated from Scryfall's
 
 ## Layout
 
-- `sets/<code>.md` one file per set, cards in collector-number order with rarity, mana
-  cost, and type. Example: `sets/msh.md` for Marvel Super Heroes.
+- `sets/<year>/<code>.md` one file per set, grouped into folders by release year, with
+  cards in collector-number order with rarity, mana cost, and type. Example:
+  `sets/2026/msh.md` for Marvel Super Heroes.
 - `SETS.md` an index of every set (code, name, type, card count, release date) linking
   to each file.
 

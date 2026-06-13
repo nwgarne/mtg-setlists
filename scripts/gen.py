@@ -2,7 +2,7 @@
 """Generate a per-set card-list markdown file for every MTG set from the Scryfall
 default_cards bulk export (streamed line-by-line, constant memory). Writes into the
 mtg-setlists repo: README.md, SETS.md (index), and sets/<code>.md per set."""
-import json, re, os
+import json, re, os, shutil
 from collections import defaultdict
 
 WORK = os.environ.get("SETLIST_WORK", ".")
@@ -46,11 +46,9 @@ def esc(s):
 def safe_code(code):
     return re.sub(r"[^a-z0-9_.-]", "_", code.lower())
 
+if os.path.isdir(f"{REPO}/sets"):
+    shutil.rmtree(f"{REPO}/sets")  # rebuild the whole tree so stale flat files / years clear
 os.makedirs(f"{REPO}/sets", exist_ok=True)
-# clear any stale set files
-for fn in os.listdir(f"{REPO}/sets"):
-    if fn.endswith(".md"):
-        os.remove(f"{REPO}/sets/{fn}")
 
 index = []
 total_cards = 0
@@ -80,8 +78,11 @@ for code in sorted(set(sets_meta) | set(by_set)):
             out.append(f"| {esc(c['cn'])} | {link} | {esc(c['rarity'])} | {esc(c['mana'])} | {esc(c['type'])} |")
     else:
         out.append("_No cards in the Scryfall bulk export yet (upcoming or unreleased set)._")
-    open(f"{REPO}/sets/{safe_code(code)}.md", "w").write("\n".join(out) + "\n")
-    index.append({"code": code, "name": name, "type": stype, "n": n, "released": released})
+    year = (released or "")[:4] or "undated"
+    ydir = f"{REPO}/sets/{year}"
+    os.makedirs(ydir, exist_ok=True)
+    open(f"{ydir}/{safe_code(code)}.md", "w").write("\n".join(out) + "\n")
+    index.append({"code": code, "name": name, "type": stype, "n": n, "released": released, "year": year})
 
 # --- SETS.md index (newest first) ---
 index.sort(key=lambda r: (r["released"] or "0000-00-00", r["code"]), reverse=True)
@@ -91,7 +92,7 @@ idx.append("Every Magic: the Gathering set with cards in the Scryfall bulk expor
 idx.append("| Released | Code | Set | Type | Cards |")
 idx.append("|----------|------|-----|------|------:|")
 for r in index:
-    idx.append(f"| {r['released'] or '-'} | `{r['code']}` | [{esc(r['name'])}](sets/{safe_code(r['code'])}.md) | {r['type'] or '-'} | {r['n']} |")
+    idx.append(f"| {r['released'] or '-'} | `{r['code']}` | [{esc(r['name'])}](sets/{r['year']}/{safe_code(r['code'])}.md) | {r['type'] or '-'} | {r['n']} |")
 open(f"{REPO}/SETS.md", "w").write("\n".join(idx) + "\n")
 
 # --- README ---
@@ -107,8 +108,9 @@ Per-set card lists for every Magic: the Gathering set, generated from Scryfall's
 
 ## Layout
 
-- `sets/<code>.md` one file per set, cards in collector-number order with rarity, mana
-  cost, and type. Example: `sets/msh.md` for Marvel Super Heroes.
+- `sets/<year>/<code>.md` one file per set, grouped into folders by release year, with
+  cards in collector-number order with rarity, mana cost, and type. Example:
+  `sets/2026/msh.md` for Marvel Super Heroes.
 - `SETS.md` an index of every set (code, name, type, card count, release date) linking
   to each file.
 
